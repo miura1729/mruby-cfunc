@@ -74,7 +74,11 @@ struct task_arg* mrb_value_to_task_arg(mrb_state *mrb, mrb_value v)
         break;
 
     case MRB_TT_FLOAT:
+#ifdef MRB_NAN_BOXING
+        arg->value.f = v.f;
+#else
         arg->value.f = v.value.f;
+#endif
         break;
 
     case MRB_TT_SYMBOL:
@@ -124,7 +128,13 @@ mrb_value task_arg_to_mrb_value(mrb_state *mrb, struct task_arg* arg)
 {
     mrb_value v;
 
+#ifdef MRB_NAN_BOXING
+    if (arg->tt != MRB_TT_FLOAT) {
+      v.ttt = mrb_mktt(arg->tt);
+    }
+#else
     mrb_type(v) = arg->tt;
+#endif
     switch (arg->tt) {
     case MRB_TT_FALSE:
     case MRB_TT_TRUE:
@@ -133,7 +143,11 @@ mrb_value task_arg_to_mrb_value(mrb_state *mrb, struct task_arg* arg)
         break;
 
     case MRB_TT_FLOAT:
+#ifdef MRB_NAN_BOXING
+        v.f = arg->value.f;
+#else
         v.value.f = arg->value.f;
+#endif
         break;
 
     case MRB_TT_SYMBOL:
